@@ -3,7 +3,6 @@
 enum sofle_layers {
     /* _M_XYZ = Mac Os, _W_XYZ = Win/Linux */
     _QWERTY,
-    _COLEMAK,
     _LOWER,
     _RAISE,
     _ADJUST,
@@ -11,7 +10,6 @@ enum sofle_layers {
 
 enum custom_keycodes {
     KC_QWERTY = SAFE_RANGE,
-    KC_COLEMAK,
     KC_LOWER,
     KC_RAISE,
     KC_ADJUST,
@@ -46,29 +44,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   KC_GRV,   KC_A,   KC_S,    KC_D,    KC_F,    KC_G,                     KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN,  KC_QUOT, \
   KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_V,    KC_B, KC_MUTE,     XXXXXXX,KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_RSFT, \
                  KC_LGUI,KC_LALT,KC_LCTRL, KC_LOWER, KC_SPC,      KC_ENT,  KC_RAISE, KC_RCTRL, KC_RALT, KC_RGUI \
-),
-/*
- * COLEMAK
- * ,-----------------------------------------.                    ,-----------------------------------------.
- * |  `   |   1  |   2  |   3  |   4  |   5  |                    |   6  |   7  |   8  |   9  |   0  |  -   |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | ESC  |   Q  |   W  |   F  |   P  |   G  |                    |   J  |   L  |   U  |   Y  |   ;  | Bspc |
- * |------+------+------+------+------+------|                    |------+------+------+------+------+------|
- * | TAB  |   A  |   R  |   S  |   T  |   D  |-------.    ,-------|   H  |   N  |   E  |   I  |   O  |  '   |
- * |------+------+------+------+------+------|  MUTE |    |       |------+------+------+------+------+------|
- * |LShift|   Z  |   X  |   C  |   V  |   B  |-------|    |-------|   K  |   M  |   ,  |   .  |   /  |RShift|
- * `-----------------------------------------/       /     \      \-----------------------------------------'
- *            | LGUI | LAlt | LCTR |LOWER | /Enter  /       \Space \  |RAISE | RCTR | RAlt | RGUI |
- *            |      |      |      |      |/       /         \      \ |      |      |      |      |
- *            `----------------------------------'           '------''---------------------------'
- */
-
-[_COLEMAK] = LAYOUT( \
-  KC_GRV,   KC_1,   KC_2,    KC_3,    KC_4,    KC_5,                      KC_6,    KC_7,    KC_8,    KC_9,    KC_0,  KC_MINS, \
-  KC_ESC,   KC_Q,   KC_W,    KC_F,    KC_P,    KC_G,                      KC_J,    KC_L,    KC_U,    KC_Y, KC_SCLN,  KC_BSPC, \
-  KC_TAB,   KC_A,   KC_R,    KC_S,    KC_T,    KC_D,                      KC_H,    KC_N,    KC_E,    KC_I,    KC_O,  KC_QUOT, \
-  KC_LSFT,  KC_Z,   KC_X,    KC_C,    KC_V,    KC_B, KC_MUTE,      XXXXXXX,KC_K,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_RSFT, \
-                 KC_LGUI,KC_LALT,KC_LCTRL,KC_LOWER, KC_ENT,      KC_SPC,  KC_RAISE, KC_RCTRL, KC_RALT, KC_RGUI \
 ),
 /* LOWER
  * ,-----------------------------------------.                    ,-----------------------------------------.
@@ -283,7 +258,7 @@ void draw_caps_off_icon(int offset_y) {
     draw_icon_map(caps_off_edges, offset_y);
 }
 
-void draw_icon(int offset_y, bool is_filled, enum icons icon) {
+void draw_layer_icon(int offset_y, bool is_filled, enum icons icon) {
     for (int y = 0; y<14; y++) {
         for (int x = 0; x<14; x++) {
             bool top_on;
@@ -310,7 +285,7 @@ void draw_icon(int offset_y, bool is_filled, enum icons icon) {
             }
 
             // draw line
-            if (x >= 13 && y >= 4) {
+            if (y >= 13 && x >= 4) {
                 top_on = !is_filled;
                 bottom_on = !is_filled;
             }
@@ -335,24 +310,10 @@ void draw_icon(int offset_y, bool is_filled, enum icons icon) {
 }
 
 static void print_status_narrow(void) {
-    // oled_write_ln_P(PSTR("\n"), false);
-    // switch (get_highest_layer(default_layer_state)) {
-    //     case _QWERTY:
-    //         oled_write_ln_P(PSTR(" Qwrt"), false);
-    //         break;
-    //     case _COLEMAK:
-    //         oled_write_ln_P(PSTR(" Clmk"), false);
-    //         break;
-    //     default:
-    //         oled_write_P(PSTR("Undef"), false);
-    // }
-
     if (keymap_config.swap_lctl_lgui) {
-        // oled_write_ln_P(PSTR("MAC"), false);
         draw_apple_icon(16);
     } else {
         draw_windows_icon(16);
-        // oled_write_ln_P(PSTR("WIN"), false);
     }
 
     led_t led_usb_state = host_keyboard_led_state();
@@ -363,45 +324,22 @@ static void print_status_narrow(void) {
         draw_caps_off_icon(48);
     }
 
-    // oled_write_ln_P(PSTR("CPSLK"), led_usb_state.caps_lock);
-
     switch (get_highest_layer(layer_state)) {
-        case _COLEMAK:
         case _QWERTY:
-            draw_icon(80, false, BASE);
+            draw_layer_icon(80, false, BASE);
             break;
         case _RAISE:
-            draw_icon(80, true, UPPER);
+            draw_layer_icon(80, true, UPPER);
             break;
         case _LOWER:
-            draw_icon(80, true, LOWER);
+            draw_layer_icon(80, true, LOWER);
             break;
         case _ADJUST:
-            draw_icon(80, true, ADJUST);
+            draw_layer_icon(80, true, ADJUST);
             break;
         default:
-            draw_icon(80, false, BASE);
+            draw_layer_icon(80, false, BASE);
     }
-}
-
-static void print_right_narrow(void) {
-    // switch (get_highest_layer(layer_state)) {
-    //     case _COLEMAK:
-    //     case _QWERTY:
-    //         draw_icon(48, false, BASE);
-    //         break;
-    //     case _RAISE:
-    //         draw_icon(48, true, UPPER);
-    //         break;
-    //     case _LOWER:
-    //         draw_icon(48, true, LOWER);
-    //         break;
-    //     case _ADJUST:
-    //         draw_icon(48, true, ADJUST);
-    //         break;
-    //     default:
-    //         draw_icon(48, false, BASE);
-    // }
 }
 
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
@@ -409,11 +347,7 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) {
 }
 
 void oled_task_user(void) {
-    if (is_keyboard_master()) {
-        print_status_narrow();
-    } else {
-        print_right_narrow();
-    }
+    print_status_narrow();
 }
 
 #endif
@@ -423,11 +357,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case KC_QWERTY:
             if (record->event.pressed) {
                 set_single_persistent_default_layer(_QWERTY);
-            }
-            return false;
-        case KC_COLEMAK:
-            if (record->event.pressed) {
-                set_single_persistent_default_layer(_COLEMAK);
             }
             return false;
         case KC_LOWER:
